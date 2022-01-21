@@ -1,0 +1,23 @@
+[package]
+name = "prime_factorization"
+authors = ["Elmo Moilanen"]
+description = "Prime factorization up to 128 bit positive integers."
+keywords = [""]
+categories = ["Mathematics"]
+version = "1.0.0"
+edition = "2021"
+license = "CC0-1.0"
+
+[profile.dev]
+opt-level = 3
+
+[profile.test]
+opt-level = 3
+overflow-checks = true
+
+[profile.release]
+opt-level = 3
+
+[dependencies]
+num = "0.4"
+rand = "0.8"
