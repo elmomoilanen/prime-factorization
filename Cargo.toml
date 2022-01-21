@@ -1,7 +1,7 @@
 [package]
 name = "prime_factorization"
 authors = ["Elmo Moilanen"]
-description = "Prime factorization up to 128 bit positive integers."
+description = "Prime factorization up to 128 bit integers."
 keywords = [""]
 categories = ["Mathematics"]
 version = "1.0.0"
