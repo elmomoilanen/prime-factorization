@@ -1,5 +1,9 @@
+//! Bytes for lcm(1,...,B), where the upper bound B was selected to 10_000.
 //!
-//!
+//! To reproduce the following array:
+//! - compute lcm(1,...,B), for B = 10_000, and take its bit representation
+//! - decompose the bit representation to an array of bytes (8 bits each)
+//! - e.g. the first hexadecimal 0x9b contains the first 8 bits of the bit representation
 //!
 
 pub const KBYTES_10K_LEN: usize = 1806;

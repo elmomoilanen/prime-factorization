@@ -2,7 +2,7 @@
 name = "prime_factorization"
 authors = ["Elmo Moilanen"]
 description = "Prime factorization up to 128 bit integers."
-keywords = [""]
+keywords = ["prime-factorization", "modular-arithmetic", "elliptic-curves"]
 categories = ["Mathematics"]
 version = "1.0.0"
 edition = "2021"
