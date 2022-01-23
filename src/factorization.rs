@@ -4,11 +4,11 @@
 //! - Trial division with small primes, see `small_primes` module.
 //! - Fermat's factorization method, useful if the integer is of form n=(a+b)*(a-b).
 //! - Primality test, see `primality` module.
-//! - (Lenstra) elliptic curve factorization with multiple of worker threads
+//! - (Lenstra) elliptic-curve factorization with multiple of worker threads
 //!
 //! Constant `MAX_WORKERS` defines the max thread count, default is 8 with the idea
 //! of roughly two threads per core. Actually, the first thread will do wheel
-//! factorization targeting smaller prime factors and the rest the elliptic curve
+//! factorization targeting smaller prime factors and other threads the elliptic curve
 //! method.
 //!
 //! Factorization algorithm stops when the number to be factored equals one.
