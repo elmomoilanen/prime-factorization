@@ -10,6 +10,8 @@ For more information of factorization and primality testing, see the module docu
 
 ## Use ##
 
+This program takes one integer input that must be in the interval [2, 2^128 - 1].
+
 Following example illustrates a direct way to run the program (with Cargo)
 
 ```bash
