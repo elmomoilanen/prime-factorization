@@ -1,5 +1,7 @@
 # Prime factorization
 
+[![main](https://github.com/elmomoilanen/prime-factorization/actions/workflows/main.yml/badge.svg)](https://github.com/elmomoilanen/prime-factorization/actions/workflows/main.yml)
+
 Command line program to decompose a natural number N into a product of its prime factors. Based on the fundamental theorem of arithmetic every natural number larger than one is either a prime itself or can be represented as a product of primes that is unique up to the order of these primes.
 
 Factorization algorithm consists of trial division, Fermat's factorization and Lenstra elliptic-curve factorization. Elliptic-curve method uses projective coordinates with Suyama's parametrization and by default 8 worker threads (rough idea is to have two threads per core). This worker count can be changed by tweaking the *MAX_WORKERS* constant.
