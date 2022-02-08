@@ -1,15 +1,14 @@
 //! Implements integer factorization.
 //!
 //! The complete factorization algorithm consists of
-//! - Trial division with small primes, see `small_primes` module.
+//! - Trial division with small primes, see `small_primes` module for the array of these primes.
 //! - Fermat's factorization method, useful if the integer is of form n=(a+b)*(a-b).
-//! - Primality test, see `primality` module.
-//! - (Lenstra) elliptic-curve factorization with multiple of worker threads
+//! - Primality test, see `primality` module for implementations of Miller-Rabin and strong Baillie-PSW tests.
+//! - Lenstra elliptic-curve factorization with multiple of worker threads
 //!
-//! Constant `MAX_WORKERS` defines the max thread count, default is 8 with the idea
-//! of roughly two threads per core. Actually, the first thread will do wheel
-//! factorization targeting smaller prime factors and other threads the elliptic curve
-//! method.
+//! Constant `MAX_WORKERS` defines the max thread count, which is eight by default.
+//! First thread will do wheel factorization targeting smaller prime factors and other threads
+//! the actual elliptic-curve factorization method.
 //!
 //! Factorization algorithm stops when the number to be factored equals one.
 //!
@@ -40,6 +39,7 @@ use crate::primality as prm;
 use crate::small_primes as small_prm;
 
 // max thread count for elliptic curve factorization
+// MODIFY this if needed but set it at least to two
 const MAX_WORKERS: usize = 8;
 
 struct MaybeFactors<T: UInt> {
