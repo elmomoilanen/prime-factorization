@@ -1,6 +1,7 @@
 //! Command line argument parser.
 //!
 //! Expected to receive positive natural number that can be parsed to 128 bit unsigned integer.
+//! Number can contain underscores symbols.
 //!
 
 pub fn parse_arguments(args: &[String]) -> Result<u128, &str> {

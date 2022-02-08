@@ -43,7 +43,7 @@ For another example, if calling the program with the largest 63 bit number
 ./target/release/prime_factorization $((2 ** 63 - 1))
 ```
 
-returned output would be the factors 7, 7, 73, 127, 337, 92737 and 649657. Notice from this example that the returned output contains all terms to restore the original input number (as a product of these factors), not just unique factors.
+returned output would be the factors 7, 7, 73, 127, 337, 92737 and 649657. Notice from this example that the output contains all terms to restore the original input number (as a product of these factors), not just unique factors.
 
 Unit/functional tests (inside modules) can be run by command
 

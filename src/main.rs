@@ -7,7 +7,7 @@
 //! or can be represented as a product of primes that is unique up to the order
 //! of these primes.
 //!
-//! E.g., a natural number 30 has the prime factor representation 2*3*5. Given
+//! E.g., natural number 30 has the prime factor representation 2*3*5. Given
 //! input 30, this program will return the prime factors in the following manner
 //!
 //! ```bash
@@ -22,17 +22,20 @@
 //! factors: 2, 5, 5
 //! ```
 //!
-//! If the input number is a prime as itself, the returned factors will include of course
-//! only the passed number
+//! which indicates that the returned output (factors) contains all terms to restore
+//! the original input number (as a product of these factors), not just unique factors.
+//!
+//! If the input number is a prime, the returned factors would of course contain
+//! only the passed number as the following example shows
 //!
 //! ```bash
 //! ./target/release/prime_factorization 17
 //! factors: 17
 //! ```
 //!
-//! Thus this program can also be used as primality tester.
+//! Thus this program can also be used as a primality tester.
 //!
-//! As a last example, the largest 128 bit number 2^128 - 1 has the following
+//! For the last example, the largest 128 bit number 2^128 - 1 has the following
 //! prime factor representation
 //!
 //! ```bash
