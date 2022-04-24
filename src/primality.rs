@@ -1,20 +1,20 @@
 //! Primality testing for odd natural (unsigned) numbers.
 //!
 //! Prior calling the public entrypoint `is_odd_prime_factor` of this module,
-//! the number should have been cheched with e.g. trial division primality test
+//! the number should have been cheched with the trial division primality test
 //! with few of the smallest prime numbers, e.g. 7. Calling the primality test
-//! here would fail for seven because it's one of the base elements of the Miller-
-//! Rabin test. According to unit tests contained in this module, the primality
+//! here would fail for number seven because it's one of the base elements of the Miller-
+//! Rabin primality test. According to unit tests contained in this module, the primality
 //! test works correctly from number (prime) 67 onwards.
 //!
-//! - Numbers having 64 or less bits are cheched with Miller-Rabin test.
-//! - Larger numbers up to 128 bits are cheched with strong Baillie-PSW test.
+//! Primality testing is separated in the following manner:
+//! - Numbers having 64 or less bits are cheched with the Miller-Rabin test.
+//! - Larger numbers up to 128 bits are cheched with the strong Baillie-PSW test.
 //!
 use std::cmp::Ordering;
 use std::convert::Into;
 
-use num::integer;
-use num::PrimInt;
+use num::{integer, PrimInt};
 
 use crate::arithmetic as arith;
 use crate::factorization::UInt;
@@ -25,6 +25,7 @@ pub fn is_odd_prime_factor<T: UInt>(num: T) -> bool {
     if num & T::one() == T::zero() {
         return false;
     }
+
     let num_u128: u128 = num.into();
 
     if num_u128 > u64::MAX as u128 {
@@ -53,21 +54,26 @@ fn is_prime_mr<T: UInt>(num: T, bases: &[u32]) -> bool {
 
     for base in bases.iter() {
         let mut q = arith::mod_exp((*base).into(), num_odd, num);
-        if q == one || q == num - one {
+
+        if q == one || q == num_even {
             continue;
         }
+
         let mut jump = false;
 
         for _ in 1..pow {
             q = arith::mod_mult(q, q, num);
-            if q == num - one {
+
+            if q == num_even {
                 jump = true;
                 break;
             }
         }
+
         if jump {
             continue;
         }
+
         return false;
     }
 
@@ -100,6 +106,7 @@ fn select_lucas_params(num: u128) -> Option<LucasParams<u128>> {
         if i & 1 == 1 {
             d = num - d % num;
         }
+
         let jac_sym = arith::jacobi_symbol(d, num);
 
         if jac_sym == -1 {
@@ -117,6 +124,7 @@ fn select_lucas_params(num: u128) -> Option<LucasParams<u128>> {
         if jac_sym == 0 && (d_orig < num || d_orig % num != 0) {
             return None;
         }
+
         if i == 10 {
             let num_sqrt = integer::sqrt(num);
             if num_sqrt * num_sqrt == num {
@@ -129,7 +137,7 @@ fn select_lucas_params(num: u128) -> Option<LucasParams<u128>> {
 }
 
 fn pass_strong_lucas_test(num: u128, params: LucasParams<u128>) -> bool {
-    let num_even = num + 1; // cannot be called with u128::MAX
+    let num_even = num + 1; // cannot be done with u128::MAX
     let num_odd = num_even.unsigned_shr(num_even.trailing_zeros());
     // num_even = 2^pow * num_odd, for pow == num_even.trailing_zeros()
 
@@ -149,22 +157,27 @@ fn pass_strong_lucas_test(num: u128, params: LucasParams<u128>) -> bool {
             update_lucas_normal_uvq(num, &mut luc_u, &mut luc_v, &mut luc_w);
             round *= 2;
         }
+
         if !is_slprp && luc_v == 0 && round > num_odd && bit < bits_to_check - 1 {
             is_slprp = true;
         }
+
         if (num_even_rev >> bit) & 1 == 1 {
             update_lucas_odd_bit_uvq(num, &params, &mut luc_u, &mut luc_v, &mut luc_w);
             round += 1;
         }
+
         if round == num_odd && (luc_u == 0 || luc_v == 0) {
             is_slprp = true;
         }
+
         if round == euler_check_round {
             let luc_q_jac: u128 = match arith::jacobi_symbol(luc_q, num).cmp(&0) {
                 Ordering::Equal => 0,
                 Ordering::Greater => num - luc_q % num,
                 Ordering::Less => luc_q,
             };
+
             if arith::mod_add(luc_w, luc_q_jac, num) == 0 {
                 pass_euler_crit = true;
             }

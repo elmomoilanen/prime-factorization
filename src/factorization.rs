@@ -2,7 +2,7 @@
 //!
 //! The complete factorization algorithm consists of
 //! - Trial division with small primes, see `small_primes` module for the array of these primes.
-//! - Fermat's factorization method, useful if the integer is of form n=(a+b)*(a-b).
+//! - Fermat's factorization method, useful if the integer is of the form n=(a+b)*(a-b).
 //! - Primality test, see `primality` module for implementations of Miller-Rabin and strong Baillie-PSW tests.
 //! - Lenstra elliptic-curve factorization with multiple of worker threads
 //!
@@ -10,7 +10,7 @@
 //! First thread will do wheel factorization targeting smaller prime factors and other threads
 //! the actual elliptic-curve factorization method.
 //!
-//! Factorization algorithm stops when the number to be factored equals one.
+//! Factorization algorithm stops when the factored number equals one.
 //!
 use std::cmp::Ordering;
 use std::convert::{From, Into};
@@ -135,6 +135,7 @@ impl<T: 'static + UInt> Factorization<T> {
                 k = k / *factor;
             }
         }
+
         unique_factors.reverse();
         self.factors = unique_factors;
     }

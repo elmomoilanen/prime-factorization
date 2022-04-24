@@ -1,6 +1,6 @@
 //! Modular arithmetic functionality.
 //!
-//! - Ordinary arithmetic operations addition, multiplication etc.
+//! - Implements ordinary arithmetic operations addition, multiplication etc.
 //! - Other: Jacobi symbol, greatest common divisor (gcd) and multiplicative inverse
 //!
 use std::cmp::Ordering;

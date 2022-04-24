@@ -1,4 +1,4 @@
-//! Bytes for lcm(1,...,B), where the upper bound B was selected to 10_000.
+//! Bytes for lcm(1,...,B), where the upper bound B has been selected to 10_000.
 //!
 //! To reproduce the following array:
 //! - compute lcm(1,...,B), for B = 10_000, and take its bit representation

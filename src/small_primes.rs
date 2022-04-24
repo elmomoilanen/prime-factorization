@@ -1,7 +1,7 @@
 //! Lists first 1006 primes as 32 bit unsigned integers.
 //!
-//! Wheel factorization algorithm, if needed, will start from 7993. Hence first 1006 primes
-//! will be used, not just the first 1000.
+//! Wheel factorization algorithm, if needed in factorization process, will start from 7993.
+//! Hence, the first 1006 primes have been defined, not just the first 1000.
 //!
 
 const PRIME_COUNT: usize = 1006;
