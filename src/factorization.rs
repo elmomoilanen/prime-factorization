@@ -33,10 +33,9 @@ impl<T: PrimInt + Unsigned + Display + Debug + Roots + Send + Sync + From<u32> +
 {
 }
 
-use crate::arithmetic as arith;
 use crate::ladder_bytes as ladbytes;
-use crate::primality as prm;
 use crate::small_primes as small_prm;
+use crate::{arith, prime};
 
 // max thread count for elliptic curve factorization
 // MODIFY this if needed but set it at least to two
@@ -98,21 +97,20 @@ impl<T: 'static + UInt> Factorization<T> {
 
     pub fn run(&mut self) {
         let mut num = self.num;
-        let one = T::one();
 
         num = self.small_prime_division(num);
 
         loop {
-            if num == one {
+            if num == T::one() {
                 break;
             }
 
             num = self.fermats_factorization(num, 2);
-            if num == one {
+            if num == T::one() {
                 break;
             }
 
-            if prm::is_odd_prime_factor(num) {
+            if prime::is_odd_prime_factor(num) {
                 self.factors.push(num);
                 break;
             }
@@ -141,20 +139,18 @@ impl<T: 'static + UInt> Factorization<T> {
     }
 
     fn small_prime_division(&mut self, mut num: T) -> T {
-        let (zero, one) = (T::zero(), T::one());
-
         for prm in small_prm::PRIMES.iter() {
-            if num == one {
+            if num == T::one() {
                 break;
             }
             let prime = (*prm).into();
 
-            if num % prime == zero {
+            if num % prime == T::zero() {
                 loop {
                     self.factors.push(prime);
 
                     num = num / prime;
-                    if num % prime != zero {
+                    if num % prime != T::zero() {
                         break;
                     }
                 }
@@ -165,31 +161,29 @@ impl<T: 'static + UInt> Factorization<T> {
     }
 
     fn fermats_factorization(&mut self, num: T, level: usize) -> T {
-        let (zero, one) = (T::zero(), T::one());
-
         let mut a = integer::sqrt(num);
         let mut a_square = arith::trunc_square(a);
 
         if a_square == num {
-            if prm::is_odd_prime_factor(a) {
+            if prime::is_odd_prime_factor(a) {
                 for _ in 0..level {
                     self.factors.push(a);
                 }
-                return one;
+                return T::one();
             }
             let mut num_back = self.fermats_factorization(a, level << 1);
 
-            if num_back > one {
+            if num_back > T::one() {
                 // factoring not completed, return the original num
                 num_back = num;
             }
             return num_back;
         }
 
-        a = a + one;
+        a = a + T::one();
         a_square = arith::trunc_square(a);
 
-        if a_square == zero {
+        if a_square == T::zero() {
             return num;
         }
 
@@ -199,16 +193,18 @@ impl<T: 'static + UInt> Factorization<T> {
 
             if arith::trunc_square(b) == b_square {
                 let rounds = level >> 1;
+
                 for _ in 0..rounds {
                     self.factors.push(a - b);
                     self.factors.push(a + b);
                 }
-                return one;
+                return T::one();
             }
 
-            a = a + one;
+            a = a + T::one();
             a_square = arith::trunc_square(a);
-            if a_square == zero {
+
+            if a_square == T::zero() {
                 return num;
             }
         }
@@ -221,7 +217,7 @@ impl<T: 'static + UInt> Factorization<T> {
         num = self.ec_factorization(num, &mut ec_factors);
 
         for (ec_factor, is_sure_prime) in ec_factors {
-            if is_sure_prime || prm::is_odd_prime_factor(ec_factor) {
+            if is_sure_prime || prime::is_odd_prime_factor(ec_factor) {
                 self.factors.push(ec_factor);
             } else {
                 // factor is some power of a prime or multiple of several primes
@@ -312,13 +308,13 @@ impl<T: 'static + UInt> Factorization<T> {
                     (*fdata).num = num;
                     (*fdata).factors.push((factor, false));
 
-                    if prm::is_odd_prime_factor(num) {
+                    if prime::is_odd_prime_factor(num) {
                         (*fdata).factors.push((num, true));
                         num = one;
                         (*fdata).num = num;
                     }
                 }
-            } else if factor == num && prm::is_odd_prime_factor(factor) {
+            } else if factor == num && prime::is_odd_prime_factor(factor) {
                 let mut fdata = factor_data.lock().unwrap();
 
                 if factor == (*fdata).num {
@@ -448,12 +444,11 @@ impl<T: 'static + UInt> Factorization<T> {
         factor_data: Arc<Mutex<MaybeFactors<T>>>,
         sender: mpsc::Sender<bool>,
     ) {
-        let (zero, one) = (T::zero(), T::one());
-
         let wheel_inc: [u32; 48] = [
             2, 4, 2, 4, 6, 2, 6, 4, 2, 4, 6, 6, 2, 6, 4, 2, 6, 4, 6, 8, 4, 2, 4, 2, 4, 8, 6, 4, 6,
             2, 4, 6, 2, 6, 6, 4, 2, 4, 6, 2, 6, 4, 2, 4, 2, 10, 2, 10,
         ];
+
         let mut k = 7991.into(); // start from 1007th prime
 
         for wheel in wheel_inc.iter().cycle() {
@@ -463,7 +458,7 @@ impl<T: 'static + UInt> Factorization<T> {
                 break;
             }
 
-            if num % k == zero {
+            if num % k == T::zero() {
                 let mut fdata = factor_data.lock().unwrap();
 
                 if k > (*fdata).num || (*fdata).factors.iter().any(|&e| e.0 == k) {
@@ -476,14 +471,14 @@ impl<T: 'static + UInt> Factorization<T> {
                     (*fdata).num = num;
                     (*fdata).factors.push((k, true));
 
-                    if num % k != zero {
+                    if num % k != T::zero() {
                         break;
                     }
                 }
             }
         }
 
-        if sender.send(num == one).is_err() {}
+        if sender.send(num == T::one()).is_err() {}
     }
 }
 

@@ -16,8 +16,7 @@ use std::convert::Into;
 
 use num::{integer, PrimInt};
 
-use crate::arithmetic as arith;
-use crate::factorization::UInt;
+use crate::{arith, factorization::UInt};
 
 struct LucasParams<T: UInt>(T, T, T);
 
@@ -45,8 +44,7 @@ pub fn is_odd_prime_factor<T: UInt>(num: T) -> bool {
 }
 
 fn is_prime_mr<T: UInt>(num: T, bases: &[u32]) -> bool {
-    let one = T::one();
-    let num_even = num - one;
+    let num_even = num - T::one();
 
     let pow = num_even.trailing_zeros();
     let num_odd = num_even.unsigned_shr(pow);
@@ -55,7 +53,7 @@ fn is_prime_mr<T: UInt>(num: T, bases: &[u32]) -> bool {
     for base in bases.iter() {
         let mut q = arith::mod_exp((*base).into(), num_odd, num);
 
-        if q == one || q == num_even {
+        if q == T::one() || q == num_even {
             continue;
         }
 
@@ -187,6 +185,7 @@ fn pass_strong_lucas_test(num: u128, params: LucasParams<u128>) -> bool {
     if luc_u != 0 || !is_slprp || !pass_euler_crit {
         return false;
     }
+
     if arith::mod_mult(2, luc_q, num) != luc_v % num {
         return false;
     }

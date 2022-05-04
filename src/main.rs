@@ -51,11 +51,11 @@ use std::{env, process};
 extern crate num;
 extern crate rand;
 
-mod arithmetic;
+mod arith;
 mod factorization;
 mod ladder_bytes;
 mod parser;
-mod primality;
+mod prime;
 mod small_primes;
 
 use factorization::{Factorization, UInt};

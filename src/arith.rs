@@ -1,7 +1,7 @@
-//! Modular arithmetic functionality.
+//! Implements modular arithmetic operations.
 //!
-//! - Implements ordinary arithmetic operations addition, multiplication etc.
-//! - Other: Jacobi symbol, greatest common divisor (gcd) and multiplicative inverse
+//! - Contains ordinary arithmetic operations addition, multiplication etc.
+//! - Has also Jacobi symbol, greatest common divisor (gcd) and multiplicative inverse
 //!
 use std::cmp::Ordering;
 use std::{cmp, mem};
@@ -40,21 +40,20 @@ pub fn mod_mult<T>(x: T, y: T, modu: T) -> T
 where
     T: PrimInt + Unsigned,
 {
-    let (zero, one) = (T::zero(), T::one());
-
     let mut x_mod = x % modu;
     let mut y_mod = y % modu;
 
-    if y_mod == zero || x_mod == zero {
-        return zero;
+    if y_mod == T::zero() || x_mod == T::zero() {
+        return T::zero();
     }
 
-    let mut res = zero;
+    let mut res = T::zero();
 
-    while y_mod > zero {
-        if y_mod & one != zero {
+    while y_mod > T::zero() {
+        if y_mod & T::one() != T::zero() {
             res = mod_add(res, x_mod, modu);
         }
+
         y_mod = y_mod.unsigned_shr(1);
         x_mod = mod_add(x_mod, x_mod, modu);
     }
@@ -66,19 +65,19 @@ pub fn mod_exp<T>(mut base: T, mut exp: T, modu: T) -> T
 where
     T: PrimInt + Unsigned,
 {
-    let (zero, one) = (T::zero(), T::one());
-
     base = base % modu;
-    if base == zero {
+
+    if base == T::zero() {
         return base;
     }
 
-    let mut res = one;
+    let mut res = T::one();
 
-    while exp > zero {
-        if exp & one != zero {
+    while exp > T::zero() {
+        if exp & T::one() != T::zero() {
             res = mod_mult(res, base, modu);
         }
+
         exp = exp.unsigned_shr(1);
         base = mod_mult(base, base, modu);
     }
@@ -90,15 +89,13 @@ pub fn trunc_square<T>(x: T) -> T
 where
     T: PrimInt + Unsigned,
 {
-    let zero = T::zero();
-
-    match x.cmp(&zero) {
-        Ordering::Equal => zero,
+    match x.cmp(&T::zero()) {
+        Ordering::Equal => T::zero(),
         _ => {
             if x < T::max_value() / x {
                 x * x
             } else {
-                zero
+                T::zero()
             }
         }
     }
@@ -112,30 +109,27 @@ where
         x = x % n;
     }
 
-    let (zero, one) = (T::zero(), T::one());
-    let (three, five, seven) = (3.into(), 5.into(), 7.into());
-
     let mut param_t = 1;
 
-    while x > zero {
-        while x & one == zero {
+    while x > T::zero() {
+        while x & T::one() == T::zero() {
             x = x.signed_shr(1);
 
-            let param_r = n & seven;
-            if param_r == three || param_r == five {
+            let param_r = n & 7.into();
+            if param_r == 3.into() || param_r == 5.into() {
                 param_t = -param_t;
             }
         }
 
         mem::swap(&mut x, &mut n);
 
-        if (x & three) == three && (n & three) == three {
+        if (x & 3.into()) == 3.into() && (n & 3.into()) == 3.into() {
             param_t = -param_t;
         }
         x = x % n;
     }
 
-    if n == one {
+    if n == T::one() {
         param_t
     } else {
         0
@@ -146,9 +140,7 @@ pub fn gcd<T>(mut x: T, mut y: T) -> T
 where
     T: PrimInt + Unsigned,
 {
-    let zero = T::zero();
-
-    if x == zero || y == zero {
+    if x == T::zero() || y == T::zero() {
         return x | y;
     }
 
@@ -161,7 +153,7 @@ where
             mem::swap(&mut y, &mut x);
         }
         y = y - x;
-        if y == zero {
+        if y == T::zero() {
             break x.unsigned_shl(shift);
         }
     }
@@ -171,16 +163,14 @@ pub fn multip_inv<T>(mut x: T, modu: T) -> T
 where
     T: PrimInt + Unsigned,
 {
-    let (zero, one) = (T::zero(), T::one());
-
     if x >= modu {
         x = x % modu;
     }
 
     let (mut r_prev, mut r_curr) = (modu, x);
-    let (mut t_prev, mut t_curr) = (zero, one);
+    let (mut t_prev, mut t_curr) = (T::zero(), T::one());
 
-    while r_curr > zero {
+    while r_curr > T::zero() {
         let quo = r_prev / r_curr;
 
         let r_temp = r_curr;
@@ -192,9 +182,9 @@ where
         t_prev = t_temp;
     }
 
-    if r_prev > one {
+    if r_prev > T::one() {
         // inverse doesn't exist, gcd(x, modu) > 1
-        return zero;
+        return T::zero();
     }
 
     t_prev
