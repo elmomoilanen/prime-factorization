@@ -77,7 +77,7 @@ impl<T: UInt> Display for Factorization<T> {
 impl<T: 'static + UInt> Factorization<T> {
     pub fn new(num: T) -> Factorization<T> {
         if num <= T::one() {
-            panic!("create failed: number must be at least two!");
+            panic!("number must be at least two!");
         }
         Factorization {
             num,
@@ -90,22 +90,20 @@ impl<T: 'static + UInt> Factorization<T> {
         if num <= T::one() {
             panic!("update failed: number must be at least two!");
         }
-
         self.num = num;
         self.factors.clear();
     }
 
+    /// Run integer factorization for `self.num`. Found factors
+    /// will be pushed to `self.factors`.
     pub fn run(&mut self) {
         let mut num = self.num;
 
         num = self.small_prime_division(num);
 
-        loop {
-            if num == T::one() {
-                break;
-            }
-
+        while num > T::one() {
             num = self.fermats_factorization(num, 2);
+
             if num == T::one() {
                 break;
             }
@@ -119,6 +117,40 @@ impl<T: 'static + UInt> Factorization<T> {
         }
 
         self.prune_duplicate_factors();
+    }
+
+    /// Get the prime factor representation, p_1^k_1 * p_2^k_2 * ... * p_m^k_m,
+    /// for the `self.num`. In order to this work, `run` method to complete the
+    /// actual factorization must have been called.
+    pub fn prime_factor_repr(&mut self) -> Vec<(T, u8)> {
+        let mut factor_repr: Vec<(T, u8)> = vec![];
+
+        if self.factors.is_empty() {
+            return factor_repr;
+        }
+
+        // sort to avoid possible pitfalls
+        self.factors.sort();
+
+        let mut curr_factor = self.factors[0];
+        let mut count = 1;
+
+        for factor in self.factors.iter().skip(1) {
+            if *factor > curr_factor {
+                factor_repr.push((curr_factor, count));
+
+                curr_factor = *factor;
+                count = 1;
+
+                continue;
+            }
+
+            count += 1;
+        }
+
+        factor_repr.push((curr_factor, count));
+
+        factor_repr
     }
 
     fn prune_duplicate_factors(&mut self) {
@@ -785,5 +817,37 @@ mod tests {
 
             compare_arrays(&factor.factors, &corr_factors[..]);
         }
+    }
+
+    #[test]
+    fn prime_factor_repr() {
+        // just insert some value, e.g. 2
+        let mut factors = Factorization::new(2u32);
+
+        factors.factors = vec![7];
+        let mut correct_prime_factor_repr: Vec<(u32, u8)> = vec![(7, 1)];
+
+        assert_eq!(factors.prime_factor_repr(), correct_prime_factor_repr);
+
+        factors.factors = vec![2, 5];
+        correct_prime_factor_repr = vec![(2, 1), (5, 1)];
+
+        assert_eq!(factors.prime_factor_repr(), correct_prime_factor_repr);
+
+        factors.factors = vec![3, 3, 3];
+        correct_prime_factor_repr = vec![(3, 3)];
+
+        assert_eq!(factors.prime_factor_repr(), correct_prime_factor_repr);
+
+        factors.factors = vec![2, 2, 2, 2, 2, 3, 3, 3];
+        correct_prime_factor_repr = vec![(2, 5), (3, 3)];
+
+        assert_eq!(factors.prime_factor_repr(), correct_prime_factor_repr);
+
+        factors.factors = vec![5, 7, 7, 7, 11, 13, 13, 13, 13, 13, 17, 19, 23];
+        correct_prime_factor_repr =
+            vec![(5, 1), (7, 3), (11, 1), (13, 5), (17, 1), (19, 1), (23, 1)];
+
+        assert_eq!(factors.prime_factor_repr(), correct_prime_factor_repr);
     }
 }
