@@ -35,7 +35,7 @@ To give few concrete examples, consider first e.g. integer 1729 for which this p
 ./target/release/prime_factorization 1729
 ```
 
-would return the prime factors 7, 13 and 19 printed on single line after the command. It's also possible to get the output printed as factor representation $7^1 + 13^1 + 19^1$ by passing an option *--pretty* or shortly *-p* before or after the integer.
+would return the prime factors 7, 13 and 19 printed on single line after the command. It's also possible to get the output printed as factor representation $7^1 * 13^1 * 19^1$ by passing an option *--pretty* or shortly *-p* before or after the integer.
 
 For another example, if calling the program with the largest 63 bit number
 
