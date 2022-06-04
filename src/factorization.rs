@@ -538,6 +538,16 @@ mod tests {
         // right_arr can be larger as it might contain zero padding
         assert!(left_arr.len() <= right_arr.len());
 
+        if right_arr.len() > left_arr.len() {
+            // extra elements must be zero padding
+            assert_eq!(
+                right_arr[left_arr.len()],
+                T::zero(),
+                "{}th element in correct sols array is not zero.",
+                left_arr.len()
+            );
+        }
+
         for (elem_l, elem_r) in left_arr.iter().zip(right_arr.iter()) {
             assert_eq!(
                 *elem_l, *elem_r,

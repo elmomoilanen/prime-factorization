@@ -1,12 +1,15 @@
 [package]
 name = "prime_factorization"
-authors = ["Elmo Moilanen"]
-description = "Prime factorization up to 128 bit integers."
-keywords = ["prime-factorization", "modular-arithmetic", "elliptic-curves"]
-categories = ["Mathematics"]
 version = "1.0.0"
+
+authors = ["Elmo Moilanen"]
 edition = "2021"
 license = "CC0-1.0"
+
+description = "Prime factorization up to 128 bit integers."
+
+keywords = ["prime-factorization", "modular-arithmetic", "elliptic-curves"]
+categories = ["mathematics"]
 
 [profile.dev]
 opt-level = 3
