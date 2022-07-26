@@ -1,14 +1,14 @@
 //! Implements integer factorization.
 //!
 //! The complete factorization algorithm consists of
-//! - Trial division with small primes, see `small_primes` module for the array of these primes.
+//! - Trial division with the first 1000 (actually 1006) primes, see `small_primes` module for the list of primes.
 //! - Fermat's factorization method, useful if the integer is of the form n=(a+b)*(a-b).
 //! - Primality test, see `primality` module for implementations of Miller-Rabin and strong Baillie-PSW tests.
 //! - Lenstra elliptic-curve factorization with multiple of worker threads
 //!
-//! Constant `MAX_WORKERS` defines the max thread count, which is eight by default.
-//! First thread will do wheel factorization targeting smaller prime factors and other threads
-//! the actual elliptic-curve factorization method.
+//! Constant `MAX_WORKERS` defines the maximal thread count, which is eight by default.
+//! First thread will do wheel factorization targeting smaller prime factors whereas other threads
+//! do the actual elliptic-curve factorization method.
 //!
 //! Factorization algorithm stops when the factored number equals one.
 //!
@@ -37,8 +37,10 @@ use crate::ladder_bytes as ladbytes;
 use crate::small_primes as small_prm;
 use crate::{arith, prime};
 
-// max thread count for elliptic curve factorization
-// MODIFY this if needed but set it at least to two
+// Max thread count for elliptic curve factorization where one thread is reserved
+// for the wheel factorization algorithm to find smaller factors.
+
+// MODIFY this if needed but it must be at least 2
 const MAX_WORKERS: usize = 8;
 
 struct MaybeFactors<T: UInt> {
@@ -279,6 +281,7 @@ impl<T: 'static + UInt> Factorization<T> {
 
             thread::spawn(move || {
                 if worker == 0 {
+                    // Try to find smaller factors with wheel factorization
                     Factorization::wheel_factorize_worker(num, factor_data, sender);
                 } else {
                     Factorization::ec_factorize_worker(num, factor_data, sender);
