@@ -1,9 +1,13 @@
 //! Command line argument parser.
 //!
-//! Expected to receive a positive natural number that can be parsed to a 128
-//! bit unsigned integer. Numbers are allowed to contain underscores, e.g. 10_000
-//! would be accepted and interpreted as 10000. Parser checks also whether a
-//! "pretty" print option `--pretty` or `-p` is included in the arguments.
+//! Expected to receive a positive natural number that can be parsed to
+//! a 128 bit unsigned integer. Numbers are allowed to contain underscores,
+//! e.g. 10_000 would be accepted and interpreted as 10000.
+//!
+//! Parser checks also whether a "pretty" print option `--pretty` or `-p`
+//! is included in the arguments. This would give the output to stdout in
+//! format p_1^k_1 * p_2^k_2 * ... * p_m^k_m for every prime factor p_ and
+//! its corresponding cardinality k_.
 //!
 
 pub fn parse_arguments(args: &mut [String]) -> Result<(u128, bool), &str> {
@@ -52,6 +56,7 @@ fn parse_to_int(arg: &mut String) -> Option<u128> {
 
 fn show_help() {
     println!(
-        "Decompose a natural number to its prime factors\n\nUSAGE:\n   ./target/release/prime_factorization <num; positive integer>"
+        "Decompose a natural number to its prime factors\n\n\
+        USAGE:\n   prime_factorization <num; positive integer> [-p|--pretty]"
     );
 }

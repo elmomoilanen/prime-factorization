@@ -1,14 +1,25 @@
-//! Bytes for lcm(1,...,B), where the upper bound B has been selected to 10_000.
+//! Elliptic curve computation.
 //!
-//! To reproduce the following array:
-//! - compute lcm(1,...,B), for B = 10_000, and take its bit representation
-//! - decompose the bit representation to an array of bytes (8 bits each)
-//! - e.g. the first hexadecimal 0x9b contains the first 8 bits of the bit representation
+//! These are needed in Lenstra elliptic-curve factorization method.
 //!
+use rand::Rng;
 
-pub const KBYTES_10K_LEN: usize = 1806;
+use crate::{
+    arith::{Arith, CoreArith},
+    UInt,
+};
 
-pub static KBYTES_10K: [u8; KBYTES_10K_LEN] = [
+const BYTES_10K_LEN: usize = 1806;
+
+/// Bytes for lcm(1,...,B), where the upper bound B equals 10_000.
+///
+/// To reproduce the following array:
+/// 1) Compute lcm(1,...,B) for B = 10_000, and convert the result to base 2 (binary)
+/// 2) Decompose the base 2 representation to an array of bytes (each element has 8 bits)
+///
+/// E.g., in the following array hexadecimal 0x9b contains the first 8 bits of the base 2 representation,
+/// 0x2c the next 8 bits etc.
+static BYTES_10K: [u8; BYTES_10K_LEN] = [
     0x9b, 0x2c, 0xc9, 0x32, 0x95, 0x1f, 0x3e, 0x64, 0x97, 0xc2, 0x46, 0x3b, 0xa9, 0xf2, 0xdb, 0x91,
     0x2e, 0xda, 0x8e, 0x89, 0x25, 0x06, 0xa4, 0xab, 0xbc, 0x33, 0x3e, 0x7d, 0x6f, 0x3a, 0x25, 0xed,
     0x61, 0xb0, 0xe3, 0xff, 0xca, 0x04, 0x57, 0x5d, 0x7f, 0xf2, 0x2d, 0xc3, 0xc6, 0x2c, 0xc5, 0x47,
@@ -123,3 +134,157 @@ pub static KBYTES_10K: [u8; KBYTES_10K_LEN] = [
     0x66, 0x28, 0x0e, 0x56, 0x73, 0x9d, 0x12, 0x18, 0xb4, 0xc5, 0xbf, 0x4a, 0x08, 0x0d, 0x3f, 0x58,
     0x76, 0xe1, 0xc3, 0xff, 0x40, 0x2d, 0x32, 0x8f, 0x0e, 0x2f, 0x70, 0xf2, 0x40, 0x00,
 ];
+
+/// Type to represent elliptic curves.
+///
+/// Elliptic curves are considered in projective coordinates
+/// in Montgomery form b*y^2*z = x^3 + a*x^2*z + x*z^2.
+///
+/// The previous form is useful because it allows to compute
+/// elliptic point additions and doubling without the y-coordinate.
+pub struct EllipticCurve<T: UInt> {
+    x: T,
+    z: T,
+}
+
+impl<T: UInt> EllipticCurve<T> {
+    /// Compute a prime factor candidate from the elliptic curve.
+    pub fn compute_maybe_factor_from_curve(modu: T) -> T {
+        let mut curve = EllipticCurve {
+            x: T::one(),
+            z: T::one(),
+        };
+
+        match curve.init_rnd_point(modu) {
+            (true, a) => {
+                // return factor candidate gcd(k*P.z, modu)
+                T::gcd_mod(curve.montgomery_ladder(a, modu), modu)
+            }
+            (false, a) => a,
+        }
+    }
+
+    /// Get random point on the elliptic curve using Suyama's parametrization.
+    fn init_rnd_point(&mut self, modu: T) -> (bool, T) {
+        let sigma = rand::thread_rng().gen_range(6..u8::MAX as u32).into();
+
+        let u = T::sub_mod(T::mult_mod(sigma, sigma, modu), 5.into(), modu);
+        let u3 = T::exp_mod_unsafe(u, 3.into(), modu);
+        let v = T::mult_mod(sigma, 4.into(), modu);
+
+        self.x = u3;
+        self.z = T::exp_mod_unsafe(v, 3.into(), modu);
+
+        let vu_diff = T::exp_mod_unsafe(T::sub_mod(v, u, modu), 3.into(), modu);
+        let uv_add = T::add_mod_unsafe(T::mult_mod_unsafe(u, 3.into(), modu), v, modu);
+
+        let a_numer = T::mult_mod_unsafe(vu_diff, uv_add, modu);
+        let a_denumer = T::mult_mod_unsafe(T::mult_mod(u3, 4.into(), modu), v, modu);
+        let a_denumer_inv = T::multip_inv(a_denumer, modu);
+
+        if a_denumer_inv == T::zero() {
+            // no inverse for `a_denumer`
+            return (false, T::gcd_mod(a_denumer, modu));
+        }
+
+        let mut a = T::sub_mod_unsafe(
+            T::mult_mod_unsafe(a_numer, a_denumer_inv, modu),
+            2.into(),
+            modu,
+        );
+
+        a = T::mult_mod_unsafe(
+            T::add_mod_unsafe(a, 2.into(), modu),
+            T::multip_inv(4.into(), modu),
+            modu,
+        );
+
+        (true, a)
+    }
+
+    /// Double a point P (`self`) on the elliptic curve in-place.
+    fn elliptic_double(&mut self, a: T, modu: T) {
+        let psum = T::add_mod(self.x, self.z, modu);
+        let psub = T::sub_mod(self.x, self.z, modu);
+
+        let psum_square = T::mult_mod_unsafe(psum, psum, modu);
+        let psub_square = T::mult_mod_unsafe(psub, psub, modu);
+
+        let pmix = T::sub_mod_unsafe(psum_square, psub_square, modu);
+
+        self.x = T::mult_mod_unsafe(psum_square, psub_square, modu);
+
+        self.z = T::mult_mod_unsafe(
+            pmix,
+            T::add_mod_unsafe(psub_square, T::mult_mod_unsafe(a, pmix, modu), modu),
+            modu,
+        );
+    }
+
+    /// Add two points P (`self`) and Q (`point`) on the elliptic curve, updating
+    /// the point P in-place.
+    ///
+    /// Difference between the points equals the initial point `point0`.
+    fn elliptic_add(&mut self, point: &Self, point0: &Self, modu: T) {
+        let lp_sum = T::add_mod(self.x, self.z, modu);
+        let lp_sub = T::sub_mod(self.x, self.z, modu);
+
+        let rp_sum = T::add_mod(point.x, point.z, modu);
+        let rp_sub = T::sub_mod(point.x, point.z, modu);
+
+        let lterm = T::mult_mod_unsafe(lp_sub, rp_sum, modu);
+        let rterm = T::mult_mod_unsafe(lp_sum, rp_sub, modu);
+
+        let term_add = T::add_mod_unsafe(lterm, rterm, modu);
+        let term_sub = T::sub_mod_unsafe(lterm, rterm, modu);
+
+        self.x = T::mult_mod_unsafe(point0.z, T::mult_mod_unsafe(term_add, term_add, modu), modu);
+
+        self.z = T::mult_mod_unsafe(point0.x, T::mult_mod_unsafe(term_sub, term_sub, modu), modu);
+    }
+
+    /// Multiply a point P on elliptic curve by a scalar k.
+    ///
+    /// This multiplication k*P is computed with Montgomery ladder algorithm
+    /// where parameter k equals lcm(1,...,10_000) of which byte representation
+    /// has been saved into static array `BYTES_10K`.
+    fn montgomery_ladder(&self, a: T, modu: T) -> T {
+        let mut q = EllipticCurve {
+            x: self.x,
+            z: self.z,
+        };
+        let mut p = EllipticCurve {
+            x: self.x,
+            z: self.z,
+        };
+
+        p.elliptic_double(a, modu);
+
+        let bits = u8::BITS;
+        let ms_bit_idx = u8::BITS - 1;
+
+        let last_byte_idx = BYTES_10K_LEN - 1;
+
+        for (byte_idx, byte_val) in BYTES_10K.iter().enumerate() {
+            for cbit in (0..bits).rev() {
+                if (byte_idx == 0 && cbit == ms_bit_idx) || (byte_idx == last_byte_idx && cbit == 0)
+                {
+                    continue;
+                }
+
+                if (*byte_val >> cbit) & 1 == 1 {
+                    q.elliptic_add(&p, self, modu);
+                    p.elliptic_double(a, modu);
+                } else {
+                    p.elliptic_add(&q, self, modu);
+                    q.elliptic_double(a, modu);
+                }
+            }
+        }
+
+        q.z
+    }
+}
+
+#[cfg(test)]
+mod tests;
