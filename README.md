@@ -1,7 +1,6 @@
 # Prime factorization
 
 [![main](https://github.com/elmomoilanen/prime-factorization/actions/workflows/main.yml/badge.svg)](https://github.com/elmomoilanen/prime-factorization/actions/workflows/main.yml)
-
 [![crate](https://img.shields.io/crates/v/prime_factorization.svg?logo=rust&color=orange)](https://crates.io/crates/prime_factorization)
 
 Program to decompose a natural number N, up to `u128::MAX`, into a product of its prime factors. Based on the fundamental theorem of arithmetic every natural number larger than one is either a prime itself or can be represented as a product of primes that is unique up to the order of these prime numbers.
