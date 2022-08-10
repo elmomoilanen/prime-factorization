@@ -10,7 +10,7 @@ Factorization algorithm of this program consists of trial division with the firs
 
 ## Install ##
 
-To install as a dependency (library target) to other program, add the following to your `Cargo.toml`
+To install as a dependency (library target) for some other program, add the following to your `Cargo.toml`
 
 ```toml
 [dependencies]
@@ -21,7 +21,7 @@ For the binary target, run command `cargo install prime_factorization` and make 
 
 ## Use ##
 
-Use the library to factorization as follows
+Use the library as follows
 
 ```rust
 use prime_factorization::Factorization;
@@ -35,7 +35,7 @@ let factor_repr = Factorization::run(num);
 assert_eq!(factor_repr.factors, vec![103_979, 36_028_797_018_963_913]);
 ```
 
-Notice that numbers from 2 to 2^128 - 1 can be factorized but the used integer type must implement (alongside few others) trait *From<u32>*.
+Notice that numbers from 2 to 2^128 - 1 can be factorized but the used integer type must implement (alongside few others) trait *From\<u32\>*.
 
 Sometimes it might be enough to check whether a particular number is a prime
 
@@ -51,10 +51,10 @@ assert_eq!(Factorization::run(num).is_prime, true);
 CLI can be used as follows
 
 ```bash
-prime_factorization num [-p|--pretty]
+prime_factorization num [-p | --pretty]
 ```
 
-where argument `num` is the mandatory natural number and option *-p* or *--pretty* more lengthy is a print flag which, when given, causes the output to be in the proper factor representation format *p_1^k_1 * ... * p_m^k_m*. Without the flag, output only lists all the prime factors from the smallest to largest.
+where argument `num` is the mandatory natural number and option *-p* or *--pretty* is a print flag which, when given, causes the output to be in the proper factor representation format $$p_1^{k_1} * ... * p_m^{k_m}$$ Without the flag, output only lists all the prime factors from the smallest to largest.
 
 ## Dev remarks ##
 
