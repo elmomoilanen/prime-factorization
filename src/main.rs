@@ -7,6 +7,7 @@
 //!
 //! Following example shows how to call the program via command line,
 //! assuming that the binary has been built first and made accessible
+//! (i.e., is in $PATH)
 //!
 //! ```bash
 //! prime_factorization num [-p|--pretty]
@@ -65,10 +66,18 @@ fn factorize<T: 'static + UInt>(num: T, print_pretty: bool) {
         let k = repr.len() - 1;
 
         let print_str_prefix = repr.iter().take(k).fold(String::new(), |acc, &(p, k)| {
-            format!("{}{}^{} * ", acc, &p.to_string(), &k.to_string())
+            if k > 1 {
+                format!("{}{}^{} * ", acc, &p.to_string(), &k.to_string())
+            } else {
+                format!("{}{} * ", acc, &p.to_string())
+            }
         });
 
-        let print_str_full = format!("{}{}^{}", print_str_prefix, repr[k].0, repr[k].1);
+        let print_str_full = if repr[k].1 > 1 {
+            format!("{}{}^{}", print_str_prefix, repr[k].0, repr[k].1)
+        } else {
+            format!("{}{}", print_str_prefix, repr[k].0)
+        };
 
         println!("factors: {}", print_str_full);
     } else {

@@ -8,8 +8,9 @@
 //! implements elliptic curve arithmetic needed during factorization.
 //!
 //! Constant `MAX_WORKERS` defines the maximal thread count. This value must be at least two and preferably
-//! between two and ten (by rough empirical testing). First thread will actually do wheel factorization
+//! between three and six (by rough empirical testing). First thread will actually run wheel factorization
 //! targeting smaller prime factors whereas other threads run the actual elliptic-curve factorization method.
+//! Thus, if the thread count has been set to one, only the wheel factorization will run.
 //!
 //! Factorization algorithm stops when the factored number equals one.
 //!
@@ -22,8 +23,9 @@ use num::integer;
 
 use crate::{arith::Arith, elliptic::EllipticCurve, prime, UInt};
 
-/// Thread count for elliptic curve factorization, set between 2 and 10.
-const MAX_WORKERS: usize = 6;
+/// Thread count for elliptic curve factorization.
+/// Set between 3 and 6 (best efficiency by rough empirical testing).
+const MAX_WORKERS: usize = 5;
 
 /// Max count of elliptic curves during single elliptic factorization run.
 const MAX_ELLIPTIC_CURVES: usize = 125;
@@ -112,7 +114,7 @@ impl<T: 'static + UInt> Factorization<T> {
     /// After the call, `factors` field of the struct contains
     /// all the prime factors, smallest prime being the first
     /// element in the container. Field `num` is the original number
-    /// and `is_prime` indicates whether the number is prime.
+    /// and field `is_prime` indicates whether the number is prime.
     ///
     /// # Examples
     ///
@@ -126,7 +128,7 @@ impl<T: 'static + UInt> Factorization<T> {
     /// assert_eq!(factor_repr.factors, vec![7, 13, 19]);
     /// ```
     ///
-    /// Check just whether 1801 is a prime (no other factors than it itself)
+    /// Check whether 1801 is a prime number (no other factors than it itself)
     ///
     /// ```
     /// use prime_factorization::Factorization;
@@ -172,7 +174,7 @@ impl<T: 'static + UInt> Factorization<T> {
     /// factors sorted from smallest to largest and as such the representation
     /// can be directly produced from them.
     ///
-    /// Hence, always call the `run` method prior calling this.
+    /// Hence, always call the `run` associated function first.
     ///
     /// # Examples
     ///
@@ -181,7 +183,7 @@ impl<T: 'static + UInt> Factorization<T> {
     ///
     /// let num = 491_520u32;
     ///
-    /// // Run first the factorization, which is 2^15 * 3 * 5
+    /// // Run first the factorization, which is 2^15 * 3 * 5 for `num`
     /// let factor_repr = Factorization::run(num);
     ///
     /// assert_eq!(factor_repr.prime_factor_repr(), vec![(2, 15), (3, 1), (5, 1)]);
