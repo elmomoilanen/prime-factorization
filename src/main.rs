@@ -10,7 +10,7 @@
 //! (i.e., is in $PATH)
 //!
 //! ```bash
-//! prime_factorization num [-p|--pretty]
+//! prime_factorization num [-p | --pretty]
 //! ```
 //!
 //! Number argument `num` is mandatory and must be in the determined range.

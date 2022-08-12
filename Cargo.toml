@@ -1,6 +1,6 @@
 [package]
 name = "prime_factorization"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Elmo Moilanen"]
 edition = "2021"
 license = "CC0-1.0"

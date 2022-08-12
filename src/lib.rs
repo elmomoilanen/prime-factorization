@@ -10,16 +10,19 @@
 //! or can be represented as a product of primes that is unique up to the order
 //! of these prime numbers.
 //!
-//! E.g., a natural number 30 has the prime factor representation 2 * 3 * 5.
+//! E.g., a natural number 30 has the prime factor representation 2 * 3 * 5
 //!
 //! ```
 //! use prime_factorization::Factorization;
 //!
-//! // factor_repr is now an instance of `Factorization` struct
+//! // `factor_repr` is now an instance of the `Factorization` struct
 //! let factor_repr = Factorization::run(30u32);
 //!
 //! // Check that the factors are correct
 //! assert_eq!(factor_repr.factors, vec![2, 3, 5]);
+//!
+//! // Given these factors, the number is certainly not a prime
+//! assert_eq!(factor_repr.is_prime, false);
 //! ```
 //!
 //! For natural number 3773, which prime factor representation is 7 * 7 * 7 * 11,
@@ -39,7 +42,7 @@
 //!
 //! If the input number is a prime, like in the following example, the returned factors
 //! would of course contain only the passed prime number and the field `is_prime`
-//! is also then true
+//! would also be true then
 //!
 //! ```
 //! use prime_factorization::Factorization;
@@ -52,10 +55,8 @@
 //! assert_eq!(factor_repr.is_prime, true);
 //! ```
 //!
-//! This program can hence also be used as a primality testing tool.
-//!
-//! As the last example, the largest number that can be factorized with this program,
-//! has the following prime factor representation
+//! The largest number that can be factorized with this program, has the following
+//! prime factor representation
 //!
 //! ```
 //! use prime_factorization::Factorization;

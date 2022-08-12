@@ -5,7 +5,7 @@
 
 Program to decompose a natural number N, up to `u128::MAX`, into a product of its prime factors. Based on the fundamental theorem of arithmetic every natural number larger than one is either a prime itself or can be represented as a product of primes that is unique up to the order of these prime numbers.
 
-Factorization algorithm of this program consists of trial division with the first one-thousand primes, Fermat's factorization and Lenstra elliptic-curve factorization using projective coordinates with Suyama's parametrization. After Fermat's and before elliptic-curve factorization step, possible primality of the number is checked and this is conducted either with Miller-Rabin or strong Baillie-PSW primality test depending on the magnitude of the number. Latter test is not deterministic in the number range it's used here (up to 128 bits) but there aren't known counterexamples.
+The whole factorization algorithm consists of trial division with the first one-thousand primes, Fermat's factorization and Lenstra elliptic-curve factorization using projective coordinates with Suyama's parametrization. After Fermat's and before elliptic-curve factorization step, possible primality of the number is checked and this is conducted either with Miller-Rabin or strong Baillie-PSW primality test depending on the magnitude of the number. Latter test is not deterministic in the number range it's used here (up to 128 bits) but there aren't known counterexamples.
 
 ## Install ##
 
@@ -57,10 +57,10 @@ where argument `num` is the mandatory natural number and option *-p* or *--prett
 
 ## Dev remarks ##
 
-- Elliptic-curve factorization must use few worker threads to be efficient. Default thread count is five which happened to be the most effective by rough empirical testing during development period. Thread count can be changed by the *MAX_WORKERS* constant in the *factor* module but its value must be two at least (otherwise performance will deteriorate notably).
+- Elliptic-curve factorization must use few worker threads to be efficient. Default thread count is five which happened to be the most effective by rough empirical testing during the development period. Thread count can be changed by the *MAX_WORKERS* constant in the *factor* module but its value must be two at least (otherwise performance will deteriorate notably).
 
-- Miller-Rabin and Baillie-PSW primality tests are probabilistic but do not contain counterexamples in the number range this program uses. Elliptic-curve factorization uses random initial points on the curves that causes slight deviations to execution times.
+- Miller-Rabin and Baillie-PSW primality tests are probabilistic but do not contain counterexamples in the number range this program uses. Elliptic-curve factorization uses random initial points on the curves which can cause some deviation to execution times.
 
 ## License ##
 
-This program is licensed under the [CC0v1](https://github.com/elmomoilanen/Modular-equations/blob/main/LICENSE).
+This program is licensed under the [CC0v1](https://github.com/elmomoilanen/prime-factorization/blob/main/LICENSE).
