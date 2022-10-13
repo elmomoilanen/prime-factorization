@@ -214,10 +214,12 @@ fn mult_mod_large_type_max_modu() {
 fn exp_mod_small_type() {
     let modu = 5;
 
-    let test_cases: [[u32; 3]; 10] = [
+    let test_cases: [[u32; 3]; 12] = [
         // [base, ex, res]: base^ex = res (mod modu)
-        [0, 0, 0],
+        [0, 0, 1],
+        [3, 0, 1],
         [0, 1, 0],
+        [0, 2, 0],
         [1, 0, 1],
         [5, 1, 0],
         [2, 4, 1],
@@ -245,8 +247,10 @@ fn exp_mod_small_type() {
 fn exp_mod_mid_type_max_modu() {
     let modu = u64::MAX;
 
-    let test_cases: [[u64; 3]; 3] = [
+    let test_cases: [[u64; 3]; 5] = [
         // [base, ex, res]: base^ex = res (mod modu)
+        [0, 0, 1],
+        [0, 1_000_000_000, 0],
         [2, 1_000_000_000, 1],
         [modu - 1, 1_000_000_000, 1],
         [modu - 1, 1_000_000_001, modu - 1],

@@ -4,6 +4,8 @@
 //!
 use rand::Rng;
 
+use itertools::Itertools;
+
 use crate::{
     arith::{Arith, CoreArith},
     UInt,
@@ -157,7 +159,7 @@ impl<T: UInt> EllipticCurve<T> {
 
         match curve.init_rnd_point(modu) {
             (true, a) => {
-                // return factor candidate gcd(k*P.z, modu)
+                // Return factor candidate gcd(k*P.z, modu)
                 T::gcd_mod(curve.montgomery_ladder(a, modu), modu)
             }
             (false, a) => a,
@@ -183,7 +185,7 @@ impl<T: UInt> EllipticCurve<T> {
         let a_denumer_inv = T::multip_inv(a_denumer, modu);
 
         if a_denumer_inv == T::zero() {
-            // no inverse for `a_denumer`
+            // No multiplicative inverse for `a_denumer`
             return (false, T::gcd_mod(a_denumer, modu));
         }
 
@@ -260,25 +262,19 @@ impl<T: UInt> EllipticCurve<T> {
 
         p.elliptic_double(a, modu);
 
-        let bits = u8::BITS;
-        let ms_bit_idx = u8::BITS - 1;
+        let it_bits_rev = (0..u8::BITS).rev();
+        let it = BYTES_10K.iter().cartesian_product(it_bits_rev);
 
-        let last_byte_idx = BYTES_10K_LEN - 1;
+        // First and last bits of `BYTES_10K_LEN` must be left out
+        let take_count = BYTES_10K_LEN * u8::BITS as usize - 1;
 
-        for (byte_idx, byte_val) in BYTES_10K.iter().enumerate() {
-            for cbit in (0..bits).rev() {
-                if (byte_idx == 0 && cbit == ms_bit_idx) || (byte_idx == last_byte_idx && cbit == 0)
-                {
-                    continue;
-                }
-
-                if (*byte_val >> cbit) & 1 == 1 {
-                    q.elliptic_add(&p, self, modu);
-                    p.elliptic_double(a, modu);
-                } else {
-                    p.elliptic_add(&q, self, modu);
-                    q.elliptic_double(a, modu);
-                }
+        for (byte_val, cbit) in it.take(take_count).skip(1) {
+            if (*byte_val >> cbit) & 1 == 1 {
+                q.elliptic_add(&p, self, modu);
+                p.elliptic_double(a, modu);
+            } else {
+                p.elliptic_add(&q, self, modu);
+                q.elliptic_double(a, modu);
             }
         }
 

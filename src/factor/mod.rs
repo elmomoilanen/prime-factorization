@@ -113,7 +113,7 @@ impl<T: 'static + UInt> Factorization<T> {
     ///
     /// After the call, `factors` field of the struct contains
     /// all the prime factors, smallest prime being the first
-    /// element in the container. Field `num` is the original number
+    /// element in the container. Field `num` has the original number
     /// and field `is_prime` indicates whether the number is prime.
     ///
     /// # Examples
@@ -267,7 +267,7 @@ impl<T: 'static + UInt> Factorization<T> {
             let mut num_back = self.factorize_fermat(a, level << 1);
 
             if num_back > T::one() {
-                // factoring not completed, return the original num
+                // Factoring not completed, return the original num
                 num_back = num;
             }
             return num_back;
@@ -314,7 +314,7 @@ impl<T: 'static + UInt> Factorization<T> {
             if is_sure_prime || prime::is_odd_prime_factor(ec_factor) {
                 self.factors.push(ec_factor);
             } else {
-                // factor is a power of prime or product of several primes
+                // Factor is a power of prime or product of several primes
                 let mut factorization_inner = Factorization {
                     num: ec_factor,
                     is_prime: false,
@@ -437,7 +437,7 @@ impl<T: 'static + UInt> Factorization<T> {
                     num = (*factors_guard).num;
                 }
             } else if curve_count & 31 == 0 {
-                // update factored number `num`
+                // Update factored number `num`
                 if let Ok(mtx_guard) = maybe_factors.lock() {
                     num = (*mtx_guard).num;
                 }
@@ -454,13 +454,13 @@ impl<T: 'static + UInt> Factorization<T> {
         mut num: T,
         sender: mpsc::Sender<bool>,
     ) {
-        // use basis {2, 3, 5, 7}
+        // Use basis {2, 3, 5, 7}
         let wheel_inc: [u32; 48] = [
             2, 4, 2, 4, 6, 2, 6, 4, 2, 4, 6, 6, 2, 6, 4, 2, 6, 4, 6, 8, 4, 2, 4, 2, 4, 8, 6, 4, 6,
             2, 4, 6, 2, 6, 6, 4, 2, 4, 6, 2, 6, 4, 2, 4, 2, 10, 2, 10,
         ];
 
-        let mut k = 7991.into(); // start search from 1007th prime 7993
+        let mut k = 7991.into(); // Start search from 1007th prime 7993
 
         for wheel in wheel_inc.iter().cycle() {
             k = k + (*wheel).into();
