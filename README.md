@@ -5,7 +5,7 @@
 
 Program to decompose a natural number N, up to `u128::MAX`, into a product of its prime factors. Based on the fundamental theorem of arithmetic every natural number larger than one is either a prime itself or can be represented as a product of primes that is unique up to the order of these prime numbers.
 
-The whole factorization algorithm consists of trial division with the first one-thousand primes, Fermat's factorization and Lenstra elliptic-curve factorization using projective coordinates with Suyama's parametrization. After Fermat's and before elliptic-curve factorization step, possible primality of the number is checked and this is conducted either with Miller-Rabin or strong Baillie-PSW primality test depending on the magnitude of the number. Latter test is not deterministic in the number range it's used here (up to 128 bits) but there aren't known counterexamples.
+The whole factorization algorithm consists of trial division with the first one-thousand primes, Fermat's factorization method and Lenstra elliptic-curve factorization using projective coordinates with Suyama's parametrization. After Fermat's and before advancing to elliptic-curve factorization step, possible primality of the number is checked and this is conducted either with Miller-Rabin or strong Baillie-PSW primality test depending on the magnitude of the number. Latter test is not deterministic in the number range it's used here (up to 128 bits) but there aren't known counterexamples.
 
 ## Install ##
 
@@ -13,10 +13,10 @@ To install as a dependency (library target) for some other program, add the foll
 
 ```toml
 [dependencies]
-prime_factorization = "1.0.2"
+prime_factorization = "1.0.3"
 ```
 
-For the binary target, run command `cargo install prime_factorization` and make sure that the installation location is in PATH (Rust toolchain properly configured).
+For the binary target, run command `cargo install prime_factorization` and make sure that the installation location is in PATH (i.e., Rust toolchain properly configured).
 
 ## Use ##
 

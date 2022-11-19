@@ -10,11 +10,17 @@
 //! its corresponding cardinality k_.
 //!
 
+const VERSION: Option<&str> = option_env!("CARGO_PKG_VERSION");
+
 pub fn parse_arguments(args: &mut [String]) -> Result<(u128, bool), &str> {
     match args.len() {
         0 => Err("no argument, nothing to factorize."),
         1 if &args[0] == "--help" || &args[0] == "-h" => {
             show_help();
+            Err("help")
+        },
+        1 if &args[0] == "--version" || &args[0] == "-v" => {
+            println!("prime_factorization {}", VERSION.unwrap_or(""));
             Err("help")
         },
         1 => match parse_to_int(&mut args[0]) {

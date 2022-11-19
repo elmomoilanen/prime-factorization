@@ -1,6 +1,6 @@
 [package]
 name = "prime_factorization"
-version = "1.0.2"
+version = "1.0.3"
 authors = ["Elmo Moilanen"]
 edition = "2021"
 license = "CC0-1.0"
@@ -16,7 +16,7 @@ exclude = [".github"]
 
 [profile.dev]
 opt-level = 3
-overflow-checks = true
+overflow-checks = false
 
 [profile.test]
 opt-level = 3
