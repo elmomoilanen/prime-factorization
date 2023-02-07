@@ -6,7 +6,7 @@ edition = "2021"
 license = "CC0-1.0"
 description = "Prime factorization up to 128 bit integers."
 
-keywords = ["prime-factorization", "modular-arithmetic", "elliptic-curves"]
+keywords = ["prime-factorization", "modular-arithmetic", "elliptic-curves", "factorization"]
 categories = ["mathematics"]
 repository = "https://github.com/elmomoilanen/prime-factorization"
 readme = "README.md"
