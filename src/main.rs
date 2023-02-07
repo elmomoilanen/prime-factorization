@@ -39,7 +39,7 @@ fn main() {
             if err == "help" {
                 process::exit(0);
             }
-            eprintln!("Error with command line args: {}", err);
+            eprintln!("Error with command line args: {err}");
             process::exit(1);
         });
 
@@ -79,9 +79,9 @@ fn factorize<T: 'static + UInt>(num: T, print_pretty: bool) {
             format!("{}{}", print_str_prefix, repr[k].0)
         };
 
-        println!("factors: {}", print_str_full);
+        println!("factors: {print_str_full}");
     } else {
         // Just print all factors on one line
-        println!("{}", factor_repr);
+        println!("{factor_repr}");
     }
 }
