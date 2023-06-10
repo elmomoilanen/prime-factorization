@@ -1,3 +1,15 @@
+# Release 1.0.4 (10-06-2023)
+
+### Fixed
+
+- Clippy uninlined-format-args warnings
+
+### Changed
+
+- Default thread count when running elliptic curve factorization
+- Documentation
+- Keywords in Cargo.toml
+
 # Release 1.0.3 (19-11-2022)
 
 ### Changed
