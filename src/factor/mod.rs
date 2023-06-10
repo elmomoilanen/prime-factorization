@@ -4,13 +4,16 @@
 //! - Trial division with the first 1006 primes.
 //! - Fermat's factorization method, useful if the integer is of the form n=(a+b)*(a-b).
 //! - Primality test, consisting of Miller-Rabin and strong Baillie-PSW tests.
-//! - Lenstra elliptic-curve factorization with multiple of worker threads. Module `elliptic`
+//! - Lenstra elliptic-curve factorization with multiple of OS threads. Module `elliptic`
 //! implements elliptic curve arithmetic needed during factorization.
 //!
-//! Constant `MAX_WORKERS` defines the maximal thread count. This value must be at least two and preferably
-//! between three and six (by rough empirical testing). First thread will actually run wheel factorization
-//! targeting smaller prime factors whereas other threads run the actual elliptic-curve factorization method.
-//! Thus, if the thread count has been set to one, only the wheel factorization will run.
+//! Constants `MAX_THREADS_` define the maximal thread counts. These values must be at least two and preferably
+//! below the number of CPU cores. In terms of performance, lower value (2-5) seems to be the best but large
+//! 128 bit semiprimes could be factorized faster with larger thread count based on benchmarking.
+//!
+//! First thread will actually run wheel factorization targeting smaller prime factors whereas other threads
+//! run the actual elliptic-curve factorization method. Thus, if the thread count has been set to one,
+//! only the wheel factorization will run.
 //!
 //! Factorization algorithm stops when the factored number equals one.
 //!
@@ -23,9 +26,9 @@ use num::integer;
 
 use crate::{arith::Arith, elliptic::EllipticCurve, prime, UInt};
 
-/// Thread count for elliptic curve factorization.
-/// Set between 3 and 6 (best efficiency by rough empirical testing).
-const MAX_WORKERS: usize = 5;
+/// Thread count for elliptic curve factorization. Currently, optimal count seems to be between 2 and 5.
+const MAX_THREADS_SMALL: usize = 2;
+const MAX_THREADS_LARGE: usize = 3;
 
 /// Max count of elliptic curves during single elliptic factorization run.
 const MAX_ELLIPTIC_CURVES: usize = 125;
@@ -308,7 +311,7 @@ impl<T: 'static + UInt> Factorization<T> {
     fn factorize_elliptic(&mut self, mut num: T) -> T {
         let mut ec_factors: Vec<(T, bool)> = Vec::new();
 
-        num = self.spawn_and_run_workers(num, &mut ec_factors);
+        num = self.spawn_and_run(num, &mut ec_factors);
 
         for (ec_factor, is_sure_prime) in ec_factors {
             if is_sure_prime || prime::is_odd_prime_factor(ec_factor) {
@@ -332,7 +335,7 @@ impl<T: 'static + UInt> Factorization<T> {
         num
     }
 
-    fn spawn_and_run_workers(&self, num: T, factors: &mut Vec<(T, bool)>) -> T {
+    fn spawn_and_run(&self, num: T, factors: &mut Vec<(T, bool)>) -> T {
         let (sender, receiver) = mpsc::channel();
 
         let maybe_factors_mtx = Arc::new(Mutex::new(MaybeFactors {
@@ -340,16 +343,22 @@ impl<T: 'static + UInt> Factorization<T> {
             factors: Vec::new(),
         }));
 
-        for worker in 0..MAX_WORKERS {
+        let max_threads = if num.into() <= u64::MAX as u128 {
+            MAX_THREADS_SMALL
+        } else {
+            MAX_THREADS_LARGE
+        };
+
+        for thread in 0..max_threads {
             let sender = sender.clone();
             let maybe_factors_mtx_clone = Arc::clone(&maybe_factors_mtx);
 
             thread::spawn(move || {
-                if worker == 0 {
+                if thread == 0 {
                     // Try to find smaller factors with wheel factorization
-                    Self::wheel_worker(maybe_factors_mtx_clone, num, sender);
+                    Self::wheel_runner(maybe_factors_mtx_clone, num, sender);
                 } else {
-                    Self::elliptic_worker(maybe_factors_mtx_clone, num, sender);
+                    Self::elliptic_runner(maybe_factors_mtx_clone, num, sender);
                 }
             });
         }
@@ -375,7 +384,7 @@ impl<T: 'static + UInt> Factorization<T> {
                 }
             }
             Err(_) => {
-                eprintln!("Error: all elliptic workers disconnected, channel closed.");
+                eprintln!("Error: all elliptic threads disconnected, channel closed.");
 
                 let maybe_factors_guard = maybe_factors_mtx.lock().unwrap();
 
@@ -388,7 +397,7 @@ impl<T: 'static + UInt> Factorization<T> {
         }
     }
 
-    fn elliptic_worker(
+    fn elliptic_runner(
         maybe_factors: Arc<Mutex<MaybeFactors<T>>>,
         mut num: T,
         sender: mpsc::Sender<bool>,
@@ -449,7 +458,7 @@ impl<T: 'static + UInt> Factorization<T> {
         if sender.send(num == T::one()).is_err() {}
     }
 
-    fn wheel_worker(
+    fn wheel_runner(
         maybe_factors: Arc<Mutex<MaybeFactors<T>>>,
         mut num: T,
         sender: mpsc::Sender<bool>,

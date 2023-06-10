@@ -57,7 +57,7 @@ where argument `num` is the mandatory natural number and option *-p* or *--prett
 
 ## Remarks ##
 
-- Elliptic-curve factorization must use few worker threads to be efficient. Default thread count is five which happened to be the most effective by rough empirical testing during the development period. Thread count can be changed by the *MAX_WORKERS* constant in the *factor* module but its value must be two at least (otherwise performance will deteriorate notably).
+- Elliptic-curve factorization must use OS threads to be efficient. The thread count should be set to a value of at least two and preferably below the number of CPU cores to optimize performance. In terms of performance, lower value (2-5) seems to be the best but large 128 bit semiprimes could be factorized faster with larger thread count based on benchmarking. Thread count can be changed by the *MAX_THREADS_* constants in the *factor* module.
 
 - Miller-Rabin and Baillie-PSW primality tests are probabilistic but do not contain counterexamples in the number range this program uses. Elliptic-curve factorization uses random initial points on the curves which can cause some deviation to execution times.
 

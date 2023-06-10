@@ -280,7 +280,7 @@ fn factorize_fermat_mix_composites() {
 }
 
 #[test]
-fn wheel_factorization_as_worker() {
+fn wheel_factorization_as_runner() {
     let test_num = 51_384_281_238_756_235_937u128;
 
     let correct_factors: [u128; 5] = [7993, 8017, 8039, 8243, 12_101];
@@ -295,7 +295,7 @@ fn wheel_factorization_as_worker() {
 
     let maybe_factors_cln = Arc::clone(&maybe_factors);
 
-    Factorization::wheel_worker(maybe_factors_cln, test_num, tx);
+    Factorization::wheel_runner(maybe_factors_cln, test_num, tx);
 
     match rx.recv() {
         Ok(true) => {
@@ -305,7 +305,7 @@ fn wheel_factorization_as_worker() {
                 resulted_factors.push((*tuple).0);
             }
         }
-        Ok(false) => panic!("wheel worker returned `false`."),
+        Ok(false) => panic!("wheel thread returned `false`."),
         Err(_) => panic!("wheel factorization error"),
     }
 

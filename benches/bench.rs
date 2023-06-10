@@ -13,6 +13,11 @@ fn bench_factorization(c: &mut Criterion) {
         b.iter(|| Factorization::run(number))
     });
 
+    group.bench_function("u64_semiprime", |b| {
+        let number = 9_804_659_461_513_846_513u64;
+        b.iter(|| Factorization::run(number))
+    });
+
     group.bench_function("u64::MAX", |b| {
         let number = u64::MAX;
         b.iter(|| Factorization::run(number))
@@ -20,6 +25,11 @@ fn bench_factorization(c: &mut Criterion) {
 
     group.bench_function("u128::MAX", |b| {
         let number = u128::MAX;
+        b.iter(|| Factorization::run(number))
+    });
+
+    group.bench_function("u128_many_factors", |b| {
+        let number = 340_282_366_920_938_463_463_374_607_431_768_211_455u128;
         b.iter(|| Factorization::run(number))
     });
 
