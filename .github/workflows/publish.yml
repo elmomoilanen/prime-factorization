@@ -21,6 +21,6 @@ jobs:
         toolchain: stable
         override: true    
     - name: Publish Crate
-      run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
+      run: cargo publish --token ${CRATES_IO_TOKEN}
       env:
         CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
