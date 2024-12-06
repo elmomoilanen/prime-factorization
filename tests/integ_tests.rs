@@ -25,6 +25,16 @@ fn factorization_u32_max() {
 
 #[test]
 fn factorization_mid_composite() {
+    let num: u64 = 6_560_999_999_999_999;
+
+    let factor_repr = Factorization::run(num);
+
+    assert_eq!(factor_repr.factors, vec![8999, 9001, 81_000_001]);
+    assert_eq!(factor_repr.is_prime, false);
+}
+
+#[test]
+fn factorization_mid_composite_2() {
     let num: u64 = 5_298_573_603_985_982_111;
 
     let factor_repr = Factorization::run(num);
@@ -33,6 +43,16 @@ fn factorization_mid_composite() {
     assert_eq!(factor_repr.is_prime, false);
 
     assert_eq!(factor_repr.num, num);
+}
+
+#[test]
+fn factorization_mid_composite_3() {
+    let num: u64 = 34_960_871_208_453_527;
+
+    let factor_repr = Factorization::run(num);
+
+    assert_eq!(factor_repr.factors, vec![13_669, 13_679, 186_978_277]);
+    assert_eq!(factor_repr.is_prime, false);
 }
 
 #[test]
@@ -48,7 +68,33 @@ fn factorization_u64_max() {
 }
 
 #[test]
+fn factorization_perfect_number() {
+    let other_part = 2u128.pow(61) - 1;
+    let num: u128 = 2u128.pow(60) * other_part;
+
+    let factor_repr = Factorization::run(num);
+    let mut correct_sol = vec![2; 60];
+    correct_sol.append(&mut vec![other_part]);
+
+    assert_eq!(factor_repr.factors, correct_sol);
+    assert_eq!(factor_repr.is_prime, false);
+}
+
+#[test]
 fn factorization_large_composite() {
+    let num: u128 = 15_128_635_609_904_480_825_735_589_151_693_951;
+
+    let factor_repr = Factorization::run(num);
+
+    assert_eq!(
+        factor_repr.factors,
+        vec![8999, 8999, 9001, 9001, 2_305_843_009_213_693_951]
+    );
+    assert_eq!(factor_repr.is_prime, false);
+}
+
+#[test]
+fn factorization_large_composite_2() {
     let num: u128 = u128::MAX - 4;
 
     let factor_repr = Factorization::run(num);
@@ -58,8 +104,6 @@ fn factorization_large_composite() {
         vec![169_909, 2_002_733_033_099_709_041_094_789_607_565_039]
     );
     assert_eq!(factor_repr.is_prime, false);
-
-    assert_eq!(factor_repr.num, num);
 }
 
 #[test]

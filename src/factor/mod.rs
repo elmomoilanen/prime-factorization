@@ -4,8 +4,7 @@
 //! - Trial division with the first 1006 primes.
 //! - Fermat's factorization method, useful if the integer is of the form n=(a+b)*(a-b).
 //! - Primality test, consisting of Miller-Rabin and strong Baillie-PSW tests.
-//! - Lenstra elliptic-curve factorization with multiple of OS threads. Module `elliptic`
-//! implements elliptic curve arithmetic needed during factorization.
+//! - Lenstra elliptic-curve factorization with multithreading approach.
 //!
 //! Constants `MAX_THREADS_` define the maximal thread counts. These values must be at least two and preferably
 //! below the number of CPU cores. In terms of performance, lower value (2-5) seems to be the best but large
@@ -25,6 +24,8 @@ use std::thread;
 use num::integer;
 
 use crate::{arith::Arith, elliptic::EllipticCurve, prime, UInt};
+
+const MAX_FERMAT_ROUNDS: usize = 3;
 
 /// Thread count for elliptic curve factorization. Currently, optimal count seems to be between 2 and 5.
 const MAX_THREADS_SMALL: usize = 2;
@@ -171,7 +172,7 @@ impl<T: 'static + UInt> Factorization<T> {
     ///
     /// Representation is returned such that each element of the container
     /// is a tuple with the prime factor `prm_i` and its count `k_i` as
-    /// its two elements, ordered s.t. the first tuple has the smallest prime.
+    /// its two elements, ordered such that the first tuple has the smallest prime.
     ///
     /// This method assumes that the `factors` field has the correct prime
     /// factors sorted from smallest to largest and as such the representation
@@ -198,18 +199,14 @@ impl<T: 'static + UInt> Factorization<T> {
         let mut count = 0;
         let mut prev_factor = T::zero();
 
-        for factor in self.factors.iter().rev() {
-            let curr_factor = *factor;
-
-            if curr_factor != prev_factor && count > 0 {
+        for &factor in self.factors.iter().rev() {
+            if factor != prev_factor && count > 0 {
                 prm_factor_repr.push((prev_factor, count));
                 count = 0;
             }
-
             count += 1;
-            k = k / curr_factor;
-
-            prev_factor = curr_factor;
+            k = k / factor;
+            prev_factor = factor;
 
             if k == T::one() {
                 prm_factor_repr.push((prev_factor, count));
@@ -221,6 +218,13 @@ impl<T: 'static + UInt> Factorization<T> {
         prm_factor_repr
     }
 
+    /// Trial division with the first `SMALL_PRIMES_COUNT` primes.
+    ///
+    /// Try to factorize the number `num`.
+    ///
+    /// Preconditions for invoker:
+    ///
+    /// Argument `num` must be greater than 1.
     fn factorize_trial(&mut self, mut num: T) -> T {
         for prm in SMALL_PRIMES.iter() {
             let prime = (*prm).into();
@@ -228,13 +232,12 @@ impl<T: 'static + UInt> Factorization<T> {
             while num % prime == T::zero() {
                 self.factors.push(prime);
                 num = num / prime;
-            }
 
-            if num == T::one() {
-                break;
+                if num == T::one() {
+                    break;
+                }
             }
         }
-
         num
     }
 
@@ -255,46 +258,56 @@ impl<T: 'static + UInt> Factorization<T> {
         }
     }
 
+    /// Fermat's factorization method.
+    ///
+    /// Try to factorize the number `num`.
+    ///
+    /// Preconditions for invoker:
+    ///
+    /// Argument `num` must not have smaller prime factors than 67.
+    /// Argument `level` must be 2 when calling this method initially.
     fn factorize_fermat(&mut self, num: T, level: usize) -> T {
-        let mut a = integer::sqrt(num);
+        // least a s.t. a^2 >= num
+        let mut a = integer::sqrt(num - T::one()) + T::one();
         let mut a_square = T::trunc_square(a);
 
         if a_square == num {
             if prime::is_odd_prime_factor(a) {
-                for _ in 0..level {
-                    self.factors.push(a);
-                }
+                self.factors.append(&mut vec![a; level]);
                 return T::one();
             }
-            // a not yet prime, start recursive search
-            let mut num_back = self.factorize_fermat(a, level << 1);
-
-            if num_back > T::one() {
-                // Factoring not completed, return the original num
-                num_back = num;
-            }
-            return num_back;
+            return self.factorize_fermat(a, level << 1);
         }
 
-        a = a + T::one();
-        a_square = T::trunc_square(a);
-
         if a_square == T::zero() {
+            // Overflow, return
             return num;
         }
 
-        for _ in 0..10 {
+        for _ in 0..MAX_FERMAT_ROUNDS {
             let b_square = a_square - num;
             let b = integer::sqrt(b_square);
 
             if T::trunc_square(b) == b_square {
-                let rounds = level >> 1;
+                // num = (a - b) * (a + b), but these aren't necessarily prime factors
+                let (c1, c2) = (a - b, a + b);
 
-                for _ in 0..rounds {
-                    self.factors.push(a - b);
-                    self.factors.push(a + b);
+                let rounds = level >> 1;
+                let mut num_back = num;
+
+                if prime::is_odd_prime_factor(c1) {
+                    self.factors.append(&mut vec![c1; rounds]);
+                    while num_back % c1 == T::zero() {
+                        num_back = num_back / c1;
+                    }
                 }
-                return T::one();
+                if prime::is_odd_prime_factor(c2) {
+                    self.factors.append(&mut vec![c2; rounds]);
+                    while num_back % c2 == T::zero() {
+                        num_back = num_back / c2;
+                    }
+                }
+                return num_back;
             }
 
             a = a + T::one();
@@ -304,7 +317,6 @@ impl<T: 'static + UInt> Factorization<T> {
                 return num;
             }
         }
-
         num
     }
 
@@ -468,8 +480,8 @@ impl<T: 'static + UInt> Factorization<T> {
             2, 4, 2, 4, 6, 2, 6, 4, 2, 4, 6, 6, 2, 6, 4, 2, 6, 4, 6, 8, 4, 2, 4, 2, 4, 8, 6, 4, 6,
             2, 4, 6, 2, 6, 6, 4, 2, 4, 6, 2, 6, 4, 2, 4, 2, 10, 2, 10,
         ];
-
-        let mut k = 7991.into(); // Start search from 1007th prime 7993
+        // Start search from the 1007th prime 7993
+        let mut k = 7991.into();
 
         for wheel in wheel_inc.iter().cycle() {
             k = k + (*wheel).into();
@@ -489,25 +501,23 @@ impl<T: 'static + UInt> Factorization<T> {
                     _ => break,
                 };
 
-                if k > factors_guard.num || factors_guard.factors.iter().any(|&e| e.0 == k) {
+                if k > factors_guard.num || factors_guard.factors.iter().any(|&elem| elem.0 == k) {
                     // Maybe factor `k` already larger than the active number or it has already been found
                     num = factors_guard.num;
                     break;
                 }
 
-                loop {
+                while num % k == T::zero() {
                     num = num / k;
 
                     factors_guard.num = num;
                     factors_guard.factors.push((k, true));
-
-                    if num % k != T::zero() {
-                        break;
-                    }
+                }
+                if num == T::one() {
+                    break;
                 }
             }
         }
-
         if sender.send(num == T::one()).is_err() {}
     }
 
@@ -517,13 +527,12 @@ impl<T: 'static + UInt> Factorization<T> {
         let mut unique_factors: Vec<T> = vec![];
         let mut k = self.num;
 
-        for factor in self.factors.iter().rev() {
-            if k % *factor == T::zero() {
-                unique_factors.push(*factor);
-                k = k / *factor;
+        for &factor in self.factors.iter().rev() {
+            if k % factor == T::zero() {
+                unique_factors.push(factor);
+                k = k / factor;
             }
         }
-
         unique_factors.reverse();
         self.factors = unique_factors;
     }

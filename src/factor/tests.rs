@@ -14,7 +14,7 @@ fn compare_arrays<T: UInt>(left_arr: &[T], right_arr: &[T]) {
         assert_eq!(
             right_arr[left_arr.len()],
             T::zero(),
-            "{}th element in correct sols array is not zero.",
+            "{}th element in correct solutions array is not zero.",
             left_arr.len()
         );
     }
@@ -37,7 +37,7 @@ fn compare_arrays_of_tuples<T: UInt, U: UInt>(left_arr: &[(T, U)], right_arr: &[
         assert_eq!(
             right_arr[left_arr.len()],
             (T::zero(), U::zero()),
-            "{}th element in correct sols array is not zero.",
+            "{}th element in correct solutions array is not zero.",
             left_arr.len()
         );
     }
@@ -61,16 +61,16 @@ fn factorize_trial_primes() {
 
     let test_integers: [u32; 8] = [2, 3, 5, 331, 4799, 7919, 7927, 7963];
 
-    for int in test_integers.iter() {
-        factorization.num = *int;
+    for &int in test_integers.iter() {
+        factorization.num = int;
         factorization.factors.clear();
 
-        let int_back = factorization.factorize_trial(*int);
+        let int_back = factorization.factorize_trial(int);
 
-        assert_eq!(int_back, 1); // factorization succeeded
+        assert_eq!(int_back, 1, "int: {int}");
 
         assert_eq!(factorization.factors.len(), 1);
-        assert_eq!(factorization.factors[0], *int);
+        assert_eq!(factorization.factors[0], int);
     }
 }
 
@@ -98,14 +98,13 @@ fn factorize_trial_small_composites() {
 
     let it = test_num.iter().zip(correct_factors.iter());
 
-    for (num, corr_facs) in it {
-        factorization.num = *num;
+    for (&num, corr_facs) in it {
+        factorization.num = num;
         factorization.factors.clear();
 
-        let num_back = factorization.factorize_trial(*num);
+        let num_back = factorization.factorize_trial(num);
 
-        assert_eq!(num_back, 1);
-
+        assert_eq!(num_back, 1, "num: {num}");
         compare_arrays(&factorization.factors, corr_facs);
     }
 }
@@ -153,20 +152,19 @@ fn factorize_trial_large_composites() {
 
     let it = test_num.iter().zip(correct_factors.iter());
 
-    for (num, corr_facs) in it {
-        factorization.num = *num;
+    for (&num, corr_facs) in it {
+        factorization.num = num;
         factorization.factors.clear();
 
-        let num_back = factorization.factorize_trial(*num);
+        let num_back = factorization.factorize_trial(num);
 
-        assert_eq!(num_back, 1);
-
+        assert_eq!(num_back, 1, "num: {num}");
         compare_arrays(&factorization.factors, corr_facs);
     }
 }
 
 #[test]
-fn factorize_fermat_composites() {
+fn factorize_fermat_square_pair_prime_factors() {
     let mut factorization = Factorization {
         num: 0,
         is_prime: false,
@@ -174,9 +172,10 @@ fn factorize_fermat_composites() {
     };
 
     // [num, p1, p2]: num = p1 * p2
-    let test_cases: [[u128; 3]; 6] = [
-        [4087, 61, 67],
+    let test_cases: [[u128; 3]; 9] = [
         [497_009, 701, 709],
+        [80_999_999, 8999, 9001],
+        [186_978_251, 13_669, 13_679],
         [4_611_686_014_132_420_609, 2_147_483_647, 2_147_483_647],
         [1_070_271_221, 32_713, 32_717],
         [
@@ -189,6 +188,8 @@ fn factorize_fermat_composites() {
             2_305_843_009_213_693_951,
             2_305_843_009_213_693_951,
         ],
+        [239_836_637_320_391, 15_485_863, 15_487_457],
+        [240_617_455_511_801, 15_503_731, 15_519_971],
     ];
 
     for case in test_cases.iter() {
@@ -198,8 +199,7 @@ fn factorize_fermat_composites() {
         factorization.factors.clear();
 
         let num_back = factorization.factorize_fermat(num, 2);
-
-        assert_eq!(num_back, 1);
+        assert_eq!(num_back, 1, "num: {num}");
 
         compare_arrays(&factorization.factors, &case[1..]);
     }
@@ -229,18 +229,16 @@ fn factorize_fermat_prime_powers() {
         factorization.factors.clear();
 
         let num_back = factorization.factorize_fermat(num, 2);
-
-        assert_eq!(num_back, 1);
+        assert_eq!(num_back, 1, "num: {num}");
 
         let corr_factors = vec![case[1]; case[2].try_into().unwrap()];
         assert_eq!(factorization.factors.len(), corr_factors.len());
-
         compare_arrays(&factorization.factors, &corr_factors);
     }
 }
 
 #[test]
-fn factorize_fermat_mix_composites() {
+fn factorize_fermat_prime_powers_mix() {
     let mut factorization = Factorization {
         num: 0,
         is_prime: false,
@@ -248,33 +246,31 @@ fn factorize_fermat_mix_composites() {
     };
 
     let test_cases: [u128; 5] = [
-        20_449,
         247_017_946_081,
         4_279_219_432_242_049,
         20_871_587_710_370_244_961,
         391_250_187_374_953_765_002_698_920_081,
+        18_311_718_949_277_964_192_650_923_718_401,
     ];
 
     let correct_factors: [[u128; 8]; 5] = [
-        [11, 11, 13, 13, 0, 0, 0, 0],
         [701, 701, 709, 709, 0, 0, 0, 0],
         [8087, 8087, 8089, 8089, 0, 0, 0, 0],
         [257, 257, 257, 257, 263, 263, 263, 263],
         [4999, 4999, 4999, 4999, 5003, 5003, 5003, 5003],
+        [8087, 8087, 8087, 8087, 8089, 8089, 8089, 8089],
     ];
 
     let it = test_cases.iter().zip(correct_factors.iter());
 
-    for (num, corr_facs) in it {
-        factorization.num = *num;
+    for (&num, corr_facs) in it {
+        factorization.num = num;
         factorization.factors.clear();
 
-        let num_back = factorization.factorize_fermat(*num, 2);
-
-        assert_eq!(num_back, 1);
+        let num_back = factorization.factorize_fermat(num, 2);
+        assert_eq!(num_back, 1, "num: {num}");
 
         factorization.factors.sort();
-
         compare_arrays(&factorization.factors, corr_facs);
     }
 }
