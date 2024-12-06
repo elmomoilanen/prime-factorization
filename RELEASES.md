@@ -1,3 +1,15 @@
+# Release 1.0.5 (06-12-2024)
+
+### Fixed
+
+- Bug in Fermat's factorization method (factors found by this method are not necessarily prime factors)
+
+### Changed
+
+- Set max number of Fermat's factorization rounds to three (previously five)
+- Minor code refactoring wrt. wheel and trial division factorization methods
+- Documentation
+
 # Release 1.0.4 (10-06-2023)
 
 ### Fixed

@@ -13,7 +13,7 @@ To install as a dependency (library target) for another program, add the followi
 
 ```toml
 [dependencies]
-prime_factorization = "1.0.4"
+prime_factorization = "1.0.5"
 ```
 
 For the binary target, run the command `cargo install prime_factorization` and ensure that the installation location is in your PATH (i.e., Rust toolchain properly configured).
