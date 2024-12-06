@@ -1,4 +1,4 @@
-//! Elliptic curve computation.
+//! Implements elliptic curve computations.
 //!
 //! These are needed in Lenstra elliptic-curve factorization method.
 //!

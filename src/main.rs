@@ -22,7 +22,7 @@
 //! p_1^k_1 * p_2^k_2 * ... * p_m^k_m,
 //!
 //! and not just listing the factors in manner p_1, p_1, ..., p_m as they
-//! are in the standard case.
+//! would in the standard case.
 //!
 use std::{env, process};
 

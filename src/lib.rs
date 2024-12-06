@@ -41,8 +41,7 @@
 //! the unique factors 7 and 11.
 //!
 //! If the input number is a prime, like in the following example, the returned factors
-//! would of course contain only the passed prime number and the field `is_prime`
-//! would also be true then
+//! would only contain this prime number and the field `is_prime` would be true.
 //!
 //! ```
 //! use prime_factorization::Factorization;

@@ -1,9 +1,9 @@
-//! Primality testing for odd natural (unsigned) numbers.
+//! Implements primality testing for odd natural (unsigned) numbers.
 //!
 //! Prior calling the public entrypoint `is_odd_prime_factor` of this module,
 //! the number should have been cheched with the trial division primality test
-//! with a few of the smallest prime numbers. Calling the primality test directly
-//! here would fail e.g. for number seven because it's one of the base elements
+//! with a few of the smallest prime numbers. Calling the primality test here
+//! directly would fail for example for number seven because it's one of the base elements
 //! of the Miller-Rabin primality test. According to unit tests contained in this
 //! module, the primality test works correctly from number (prime) 67 onwards.
 //!
@@ -26,12 +26,15 @@ use crate::{
 
 struct LucasParams<T: UInt>(T, T, T);
 
+/// Primality test.
+///
+/// Preconditions for invoker:
+///
+/// Argument `num` must satisfy num >= 67.
 pub fn is_odd_prime_factor<T: UInt>(num: T) -> bool {
     if num <= T::one() || num & T::one() == T::zero() {
         return false;
     }
-    // Assuming num >= 67 so MR-test works correctly
-
     let num_u128: u128 = num.into();
 
     if num_u128 > u64::MAX as u128 {
