@@ -16,7 +16,7 @@ jobs:
     name: Run lints, checks and tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Update local toolchain
       run: |
         rustup update
@@ -29,11 +29,11 @@ jobs:
         cargo clippy --version
     - name: Lint
       run: |
+        cargo check
         cargo fmt -- --check
         cargo clippy -- -D warnings
     - name: Test
       run: |
-        cargo check
         cargo test
     - name: Build
       run: |
