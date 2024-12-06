@@ -481,9 +481,9 @@ fn trunc_square_mid_type() {
     let test_cases: [[u64; 2]; 5] = [
         [0, 0],
         [1, 1],
-        [2, 4],
         [u32::MAX as u64, 18_446_744_065_119_617_025],
         [u32::MAX as u64 + 1, 0],
+        [u64::MAX, 0],
     ];
 
     for case in test_cases.iter() {
@@ -493,14 +493,15 @@ fn trunc_square_mid_type() {
 
 #[test]
 fn trunc_square_large_type() {
-    let test_cases: [[u128; 2]; 4] = [
+    let test_cases: [[u128; 2]; 5] = [
         [0, 0],
-        [3, 9],
+        [1, 1],
         [
             u64::MAX as u128,
             340_282_366_920_938_463_426_481_119_284_349_108_225,
         ],
         [u64::MAX as u128 + 1, 0],
+        [u128::MAX, 0],
     ];
 
     for case in test_cases.iter() {

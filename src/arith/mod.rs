@@ -1,11 +1,12 @@
-//! Basic modular arithmetic operations.
+//! Implements basic modular arithmetic operations.
 //!
-//! It's recommended to use functions of `Arith` trait unless it is
+//! It's recommended to use the functions of trait `Arith` unless it is
 //! guaranteed that the operands are less than the modulus `modu`.
-//! Violating this constraint might cause two's complement wrapping.
+//! Violating this constraint might cause two's complement wrapping and
+//! hence incorrect results.
 //!
 
-use std::cmp::{self, Ordering};
+use std::cmp;
 use std::mem;
 
 use num::{PrimInt, Unsigned};
@@ -145,6 +146,7 @@ where
         inv
     }
 
+    /// Argument `n` must be odd
     fn jacobi_symbol(mut x: T, mut n: T) -> i8 {
         if x >= n {
             x = x % n;
@@ -178,15 +180,9 @@ where
     }
 
     fn trunc_square(x: T) -> T {
-        match x.cmp(&T::zero()) {
-            Ordering::Greater => {
-                if x < T::max_value() / x {
-                    x * x
-                } else {
-                    T::zero()
-                }
-            }
-            _ => T::zero(),
+        match x.checked_mul(&x) {
+            Some(res) => res,
+            None => T::zero(),
         }
     }
 }
