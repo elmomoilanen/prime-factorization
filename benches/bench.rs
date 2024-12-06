@@ -6,7 +6,7 @@ use prime_factorization::Factorization;
 
 fn bench_factorization(c: &mut Criterion) {
     let mut group = c.benchmark_group("factorization::run");
-    group.sample_size(15);
+    group.sample_size(10);
 
     group.bench_function("u32::MAX", |b| {
         let number = u32::MAX;
