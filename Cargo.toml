@@ -31,7 +31,7 @@ rand = "0.8"
 itertools = "0.10"
 
 [dev-dependencies]
-criterion = "0.4"
+criterion = "0.5"
 
 [[bench]]
 name = "bench"
